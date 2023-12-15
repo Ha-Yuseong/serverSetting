@@ -36,9 +36,6 @@ https://aws.amazon.com/ko/docker/<br>
 
 ### Docker 설치
 
-
-
-
     Docker를 설치해보도록 합시다.
     
     ubuntu 기준으로는 아래에 공식사이트에서 실행시켜야할 명령들을 제공합니다.
@@ -72,3 +69,55 @@ https://aws.amazon.com/ko/docker/<br>
 
 정상적으로 설치하고 3번을 수행하면 결과는 다음과 같습니다.<br><br>
 <img src="./result_image/docekr_result.png"><br>
+
+### Docker Image 검색
+docker는 여러 이미지들을 지원하고 있고 이미지마다 버전이 존재합니다.<br>
+어떤 이미지를 제공하고 어떤 버전이 있는지는 Dockerhub 사이트에서 검색이 가능합니다.<br>
+
+https://hub.docker.com/
+
+<details>
+<summary> <b> 도커 허브 페이지 화면</b> </summary>
+
+메인 페이지<br>
+<img src="./result_image/docker_hub.png"><br>
+
+검색 결과<br>
+<img src="./result_image/docker_hub_search.png"><br>
+
+상세 내용 및 설치 가능한 버전<br>
+<img src="./result_image/docker_hub_detail.png"><br>
+</details>
+
+### Docker 주요 명령어
+
+docker pull {설치할 이미지 이름}으로 최신 버전의 이미지를 설치할 수 있습니다.<br>
+만약 특정 버전의 이미지를 설치하려면 docker pull {이미지 이름:버전} 으로 설치가 가능합니다.<br>
+
+<img src="./result_image/docker_pull.png"><br>
+
+docker images : Docker에 현재 설치된 이미지들을 조회할 수 있습니다.<br>
+
+<img src="./result_image/docker_images.png"><br>
+
+docker run {옵션} {이미지} : 컨테이너를 실행하는 명령어 옵션에서 컨테이너 이름, 포트 번호 등을 설정 가능.
+
+예시로 redis를 docker run을 하면 다음과 같습니다.<br>
+
+<img src="./result_image/docker_run.png"><br>
+Docker run은 여러 옵션이 있고 여기서 사용된 옵션은 -d, -p, --name입니다.<br>
+-d : 백그라운드에서 실행하라<br>
+-p : 이 컨테이너의 포트 번호는 { 호스트의 포트 (외부 포트) : 컨테이너의 내부 포트 } 각각 6379이다.<br>
+--name : 이 컨테이너의 이름은 "redis"이다.<br><br>
+
+docker ps {옵션} : 현재 존재하는 컨테이너들의 정보를 조회할 수 있는 명령어<br>
+
+<img src="./result_image/docker_ps.png"><br>
+
+docker stop {컨테이너 id 혹은 컨테이너 이름} : 실행중인 컨테이너를 멈춥니다.<br>
+
+<img src="./result_image/redis_stop.png"><br>
+
+docker rm {옵션} {컨테이너 ID 혹은 컨테이너 이름} : 컨테이너를 삭제하는 명령어<br>
+
+<img src="./result_image/docker_ps_a.png">
