@@ -71,4 +71,4 @@ https://aws.amazon.com/ko/docker/<br>
     sudo docker run hello-world
 
 정상적으로 설치하고 3번을 수행하면 결과는 다음과 같습니다.<br><br>
-<img src="./image/docekr_result.png"><br>
+<img src="./result_image/docekr_result.png"><br>
