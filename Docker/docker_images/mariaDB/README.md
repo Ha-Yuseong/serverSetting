@@ -29,36 +29,22 @@ https://linuxnatives.net/2015/10-reasons-to-migrate-to-mariadb-if-still-using-my
 
 ### Docker에 MariaDB image 설치
 
-    Docker를 설치해보도록 합시다.
-    
-    ubuntu 기준으로는 아래에 공식사이트에서 실행시켜야할 명령들을 제공합니다.
-    https://docs.docker.com/engine/install/ubuntu/
+먼저 MariaDB image를 설치합니다.
+```
+docker pull mariadb
+```
+<img src="./result_image/docker_image_mariaDB.png"><br>
 
-    1. 먼저 도커 레포지터리를 세팅해야합니다. 이유는 추후 docker install, update를 레포지터리에서 수행 가능하게 되기 때문이라고 합니다.
+이제 MariaDB 컨테이너를 실행시켜줍니다.
+```
+docker run -d --name "컨테이너 이름" --env MARIADB_ROOT_PASSWORD="root 비밀번호 입력"  mariadb
+```
 
-    아래의 명령들을 위에서부터 차례대로 수행해줍니다.
+<img src="./result_image/mariaDB_run.png"><br>
 
-    # Add Docker's official GPG key (아래는 도커 공식 GPG key 추가하는 코드들):
-    sudo apt-get update
-    sudo apt-get install ca-certificates curl gnupg
-    sudo install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    sudo chmod a+r /etc/apt/keyrings/docker.gpg
+이제 MariaDB가 모두 설치되어 DB로서 사용할 수 있습니다.<br>
 
-    # Add the repository to Apt sources (레포지터리를 apt 소스에 추가하는 코드들):
-    echo \
-    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-    $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-    sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-    sudo apt-get update
+작업용 데스크탑(windows)에서 MariaDB의 기본 GUI인 HeidiSQL을 통해 ubunut 서버의 mariaDB에 접속할 수 있는 것을 확인할 수 있습니다.<br>
 
-    2. docker pakage를 install합니다.
-    
-    sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-    3. docker engine이 제대로 설치되었는지 hello-world 이미지를 실행하여 확인해봅니다.
-
-    sudo docker run hello-world
-
-정상적으로 설치하고 3번을 수행하면 결과는 다음과 같습니다.<br><br>
-<img src="./result_image/docekr_result.png"><br>
+<img src="./result_image/mariaDB_connnect.png"><br>
+<img src="./result_image/maraidb_connected.png"><br>
