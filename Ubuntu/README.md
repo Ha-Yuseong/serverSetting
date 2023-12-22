@@ -34,18 +34,50 @@ VM의 경우는 각 VM에 맞는 설치법 대로 Ubunut 이미지를 마운트�
 
 ### SSH 연결
 
-ubuntu 설치 중에 사용자 계정을 만들었을겁니다.<br>
-그 계정의 이름과 비밀번호만 알면 연결할 수 있습니다.
+SSH에 연결하려면 우선 openssh-server를 설치하셔야합니다. ubuntu에서 아래의 커맨드를 입력하여 필요한 기능들을 설치해봅시다.
 
+```
+일반 계정의 경우
+$ sudo apt update
+$ sudo apt-get install openssh-server
+
+root 계정일 경우
+# apt update
+# apt-get install openssh-server
+```
+
+이렇게하면 ssh 연결이 가능한 상태가 되었습니다.<br>
 SSH 클라이언트로 ubuntu에 연결하려면 ubuntu의 ip를 입력하고 계정 이름과 비밀번호를 입력하면 접속할 수 있습니다.
 
-    같은 공유기를 사용하고 있다면?
+여러가지 SSH 클라이언트가 있지만 현재 제가 사용하는 툴은 MobaXterm인데 그것을 기준으로 연결을 시도해보겠습니다.
 
-    예를 들면 현재 한 Iptime 공유기에 랜선을 두개 꽂아서 하나는 작업용 PC, 하나는 Ubunut 서버에 연결되었다면 공유기 내부에서 각각의 IP로 192.168.0.XXX 형태의 사설 IP일 것입니다.
+참고로 MobaXterm은 공식사이트인 https://mobaxterm.mobatek.net/ 에서 설치하실 수 있습니다.
 
-    작업용 PC에서 Ubunut에 연결하는 방법은 Ubunut 서버의 IP가 192.168.0.1이라고 하면 192.168.0.1을 입력하면 연결이 가능합니다.
+우선 설치한 MobaXterm을 키고 Session 탭을 클릭해주세요
+<img src="./image/moba1.png">
+
+이후 SSH 탭에서 빨간 표시된 부분에 해당하는 입력값을 넣어주시고 OK버튼을 누릅니다.
+<img src="./image/moba2.png">
+
+    만약 같은 공유기를 사용하고 있다면?
+
+    예를 들면 현재 한 Iptime 공유기에 랜선을 두개 꽂아서 하나는 작업용 PC, 하나는 Ubunut 서버에 연결되었다면 각각의 IP는 192.168.0.XXX 형태의 사설 IP일 것입니다.
+
+    같은 공유기를 쓰는 작업용 PC에서 Ubunut에 연결하는 방법은 Ubunut 서버의 IP가 192.168.0.156이라고 하면 ip입력 란에 192.168.0.156을 입력해도 연결이 가능합니다.
 
     하지만 아예 외부에서 ssh로 연결하기 위해서는 공인 IP값에 포트포워딩을 통하여 Ubunut에 연결하게 해줘야합니다.
 
-    예를들어 원래 아이피가 XXX.YYY.ZZZ.ABC라면 포트포워딩으로 XXX.YYY.ZZZ.ABC:'어떤숫자'로 요청이 들어오면 사설 IP인 192.168.0.1로 연결시키는 설정이 필요합니다.
+    예를들어 원래 아이피가 XXX.YYY.ZZZ.ABC라면 포트포워딩으로 XXX.YYY.ZZZ.ABC:'특정 포트 번호'로 요청이 들어오면 사설 IP인 192.168.0.156로 연결시키는 설정이 필요합니다.
+
+ssh로 연결이 됐다면 계정 이름과 비밀번호를 입력해줍시다.<br>
+
+<img src="./image/moba3.png">
+
+그러면 계정 이름과 비밀번호를 정확히 입력했다면 연결이 정상적으로 완료됩니다.
+
+<img src="./image/moba4.png">
+
+### SSH root로 바로 연결하기
+
+Ubuntu는 기본적으로 root으로 다이렉트 접속을 막아놓았습니다. 그렇기 때문에 root으로 바로 접속하려면 따로 설정이 필요합니다.
 
