@@ -81,3 +81,23 @@ ssh로 연결이 됐다면 계정 이름과 비밀번호를 입력해줍시다.<
 
 Ubuntu는 기본적으로 root으로 다이렉트 접속을 막아놓았습니다. 그렇기 때문에 root으로 바로 접속하려면 따로 설정이 필요합니다.
 
+먼저 아래 명령어를 입력하고 비밀번호를 입력하여 root 계정을 활성화시켜주세요
+```
+sudo password root
+```
+
+ssh root 접근은 sshd_config 파일의 내용을 직접 수정하여 root 접근을 허용해야합니다. 아래 명령어를 입력해주세요.
+
+```
+# vim /etc/ssh/sshd_config
+```
+
+해당 명령을 수행하면 sshd_config 파일의 내용이 나오면 /PermitRootLogin을 입력해주세요. (슬래쉬는 찾기 기능입니다.)<br>
+
+<img src="./image/root1.png">
+
+여기서 앞에 #을 때서 주석을 해제하고 뒤에 prohibit 이하 부분을 yes로 수정해주세요.
+
+<img src="./image/root2.png">
+
+해당 설정들을 마치셨으면 ssh 접속 시 다이렉트로 root 로그인이 허용된 것을 확인하실 수 있습니다.
