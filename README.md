@@ -6,4 +6,6 @@
 
 ### [Docker 설치 방법](./Docker/README.md)
 
-쿠버네티스 (예정)
+### [Nginx 설치 방법](./Nginx/README.md)
+
+쿠버네티스 (작업 중)
