@@ -137,6 +137,26 @@ DNS 입력시 혹시 iptime.org로 등록하시려고 하신다면 아마 CAA �
 sudo certbot certonly --nginx
 ```
 
+
 특별한 문제가 없다면 certbot을 이용하여 https가 적용된 모습을 확인하실 수 있습니다!
 
 <img src="./image/nginxHttps.png">
+
+
+### Nginx에서 http/2 적용하기
+
+Certbot으로 https까지 모두 수행했다면 http/2를 적용할 수 있습니다.
+
+```
+sudo vim /etc/nginx/sites-available/"여기 위치하는 파일 이름"
+```
+
+파일을 열게 되면 https 설정을 나타내는 구간에서 아래와 같이 적힌 구간이 있을 것 입니다.
+
+```
+listen [::]:433 ssl ipv6only=on;
+```
+
+여기에 ssl 가운데에 http2 라고 입력하면 http/2가 적용됩니다.
+
+<img src="./image/nginxHttp2.png">
