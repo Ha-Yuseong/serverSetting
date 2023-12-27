@@ -1,6 +1,10 @@
 # Ubuntu 데스크탑을 이용한 서버 세팅
 
-백엔드, DB, 이미지 등등 어떠한 경우로든 ubuntu를 이용한 간단한 서버 세팅을 할 수 있는 방법이 궁금하다면?
+Ubunt, Docker, Nginx, Kubernetes, Jenkins를 이용한 서버 세팅, CI/CD 방법 정리<br>
+
+각각의 리드미에서 간략한 기술 소개 및 설치 방법을 정리해두었습니다.<br>
+
+서버 세팅을 아예 처음부터 진행하려고 하신다면 첫 번째 부터 각각 순서대로 읽으시면 됩니다.
 
 ### [Ubuntu 설치 방법](./Ubuntu/README.md)
 
@@ -8,4 +12,4 @@
 
 ### [Nginx 설치 방법](./Nginx/README.md)
 
-쿠버네티스 (작업 중)
+### [Kubernetes 설치 방법](./Kubernetes/README.md)
