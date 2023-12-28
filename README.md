@@ -13,3 +13,5 @@ Ubunt, Docker, Nginx, Kubernetes, Jenkins를 이용한 서버 세팅, CI/CD 방�
 ### [Nginx 설치 방법](./Nginx/README.md)
 
 ### [Kubernetes 설치 방법](./Kubernetes/README.md)
+
+(Jenkins 예정)
