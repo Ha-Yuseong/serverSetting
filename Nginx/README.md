@@ -160,3 +160,105 @@ listen [::]:433 ssl ipv6only=on;
 여기에 ssl 가운데에 http2 라고 입력하면 http/2가 적용됩니다.
 
 <img src="./image/nginxHttp2.png">
+
+
+### Nginx default.conf 파일 분석
+
+Nginx에는 Nginx의 설정을 담당하는 nginx.conf라는 파일이 있습니다. 해당 파일에서 내용을 보면 다음과 같은 설정이 있습니다.
+
+```
+include /etc/nginx/sites-enabled/*;
+```
+
+/etc/nginx/sites-enabled/ 디렉토리 밑에 있는 파일들을 include하겠다는 설정입니다.<br>
+해당 디렉토리를 찾아가면 따로 설정 하지 않았을 시 default 라는 파일이 있습니다.
+
+default.conf는 nginx 설치 시 기본 제공되는 파일로 nginx.conf에서 include하는 파일입니다.
+이 파일에서 서버 블록의 설정, 가상 호스트 등을 정의할 수 있습니다.
+
+default 파일을 다음 명령어로 열어 보겠습니다.
+```
+sudo vim /etc/nginx/sites-enabled/default
+```
+<br>
+
+Certbot으로 ssl이 적용됐을 때 기준으로 서버 블록이 3개 있을 것 입니다.<br>
+서버 블록이란 가상 호스트를 정의할 수 있고 요청에 따라 처리 설정을 하는 블록을 나타냅니다.<br>
+default의 내용을 주석을 통해 하나하나 해석하면 다음과 같습니다.
+
+```
+# server block을 만든다.
+server {
+        # HTTP 트래픽을 80번 포트가 수신한다. (default_server : 해당 포트를 기본 서버로 설정)
+        listen 80 default_server;
+        # IPv6로 요청또한 80번 포트를 이용한다.
+        listen [::]:80 default_server;
+
+        # 요청된 파일을 찾을 기본 루트 디렉토리를 설정 (웹 서버 기본 디렉토리)
+        root /var/www/html;
+
+        # 이 서버 블록에 대한 도메인을 설정합니다. [ _ ] 는 모든 도메인(호스트 이름)을 허용한다는 뜻합니다.
+        server_name _;
+
+        # 루트 경로에서 요청 처리 방법을 정의합니다. 아래는 디렉토리가 없을 시 404 에러를 리턴합니다.
+        location / {
+                try_files $uri $uri/ =404;
+        }
+}
+
+# certbot을 적용 했을 때 자동으로 만들어주는 서버 블록입니다.
+server {
+
+        # 웹 서버 기본 디렉토리 설정
+        root /var/www/html;
+
+        # 기본 문서 파일의 우선순위를 정의합니다.
+        index index.html index.htm index.nginx-debian.html;
+        
+        # 이 서버 블록이 처리할 도메인을 지정합니다.
+        server_name [dns 부분 입니다.];
+
+        # 해당 location 블록은 기본적인 파일 및 디렉토리 요청 처리를 정의합니다.
+        location / {
+                try_files $uri $uri/ =404;
+        }
+
+    # IPv6 주소를 통해 들어오는 SSL 연결을 수신합니다.
+    listen [::]:443 ssl ipv6only=on; 
+
+    # 기본적으로 443 포트를 통해 들어오는 SSL 연결을 수신합니다.
+    listen 443 ssl;
+
+    # SSL 인증서 파일의 경로를 지정합니다.
+    ssl_certificate /etc/letsencrypt/live/[dns 부분 입니다.]/fullchain.pem;
+
+    # SSL 인증서의 개인 키 파일의 경로를 지정합니다.
+    ssl_certificate_key /etc/letsencrypt/live/[dns 부분 입니다.]/privkey.pem;
+
+    # Certbot이 생성한 Nginx SSL 옵션을 포함합니다.
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+
+    # Diffie-Hellman 키 교환에 사용되는 파일의 경로를 지정합니다.
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+}
+
+server {
+
+    # $host 값이 ssl로 설정한 dns값이라면 return 301을 합니다.
+    # 301은 HTTP 응답코드 "Moved Permanently" 입니다.
+    # 현재 요청 리소스가 영구적으로 새 위치로 이동했음을 알려주고 리다이렉트할 때 사용됩니다.
+    # 여기선 https로 이동하게 만들고 있습니다.
+    if ($host = [dns 부분 입니다.]) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    listen 80 ;
+    listen [::]:80 ;
+
+    server_name your_dns;
+    return 404; # managed by Certbot
+
+}
+```
