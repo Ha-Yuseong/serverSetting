@@ -61,13 +61,13 @@ systemctl status nginx
 #### nginx 설정 명령어
 ```
 // nginx 시작
-sudo ststemctl start nginx
+sudo systemctl start nginx
 
 // nginx 중지
-sudo ststemctl stop nginx
+sudo systemctl stop nginx
 
 // nginx 재시작
-sudo ststemctl restart nginx
+sudo systemctl restart nginx
 
 // nginx 완전 삭제
 sudo apt-get remove --purge nginx nginx-full nginx-common
