@@ -49,4 +49,67 @@ https://kubernetes.io/ko/docs/concepts/overview/
 공식 사이트를 기준으로 설치방법을 배워보겠습니다.<br>
 https://kubernetes.io/ko/docs/tasks/tools/<br>
 
-먼저 kubectl을 
+먼저 kubectl을 설치해야합니다. 크게 아래와 같이 3가지 방법이 있는데
+1. 리눅스에서 curl을 사용하여 kubectl 바이너리 설치
+2. 기본 패키지 관리 도구를 사용하여 설치
+3. 다른 패키지 관리 도구를 사용하여 설치
+
+저의 경우 2번을 기준으로 Debian 계열의 기본 패키지인 apt를 이용한 kuberctl 설치를 진행하겠습니다.
+
+apt 패키지 인덱스를 업데이트하고 쿠버네티스 apt 리포지터리를 사용하는 데 필요한 패키지들을 설치.
+```
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl
+```
+
+@@@@ <b>Debian 9(stretch) 또는 그 이전 버전을 사용하는 경우 apt-transport-https도 설치.</b> @@@@
+```
+sudo apt-get install -y apt-transport-https
+```
+
+구글 클라우드 공개 서명 키를 다운로드
+
+```
+sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+```
+
+쿠버네티스 apt 리포지터리를 추가한다.
+```
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+```
+
+새 리포지터리의 apt 패키지 인덱스를 업데이트하고 kubectl을 설치.
+```
+sudo apt-get update
+sudo apt-get install -y kubectl
+```
+
+### 문제가 발생하는 경우
+
+저의 경우 Ubunut 22.04.3 LTS에서 다음과 같은 문제가 발생했습니다.
+
+```
+...(위의 내용 생략)
+W: GPG 오류: https://packages.cloud.google.com/apt kubernetes-xenial InRelease: 다음 서명들은 공개키가 없기 때문에 인증할 수 없습니다: NO_PUBKEY B53DC80D13EDEF05
+E: The repository 'https://apt.kubernetes.io kubernetes-xenial InRelease' is not signed.
+N: Updating from such a repository can't be done securely, and is therefore disabled by default.
+N: See apt-secure(8) manpage for repository creation and user configuration details.
+```
+
+이 문제를 해결하는 방법을 github issue에서 찾았는데 다음과 같았습니다.
+
+<img src="./images/install_issue.png"><br>
+
+
+위의 설치 과정에서 
+"구글 클라우드 공개 서명 키를 다운로드"의 경우 아래 명령어를 실행시키고
+```
+curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --yes --dearmor -o /usr/share/keyrings/kubernetes-archive-keyring.gpg
+```
+
+"쿠버네티스 apt 리포지터리를 추가 " 부분에서는 아래 명령어를 수행시켜주시면 됩니다.
+```
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list > /dev/null
+```
+
+위 두개의 명령을 수행하고 apt update 및 설치를 진행하자 설치가 정상적으로 수행되었습니다.
