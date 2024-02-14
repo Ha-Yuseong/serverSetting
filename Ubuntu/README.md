@@ -20,6 +20,9 @@ https://ubuntu.com/download/server
     (저는 웹 서핑, 이미지 확인 등도 같이 하기 때문에 Desktop을 선택했습니다.)
 
 만약 실제 하드웨어를 가진 기기에 OS를 설치한다면 아래에 부팅 가능한 usb 드라이버가 필요합니다.<br>
+
+### Rufus를 이용한 설치
+
 아래 사이트는 usb를 부팅 가능한 USB로 만들어주는 Rufus를 다운 받을 수 있는 공식 사이트 입니다.<br>
 https://rufus.ie/ko/
 <br><br>
@@ -31,6 +34,36 @@ Rufus를 이용하면 다음과 같이 사용할 USB를 선택하여<br>
 
 VM의 경우는 각 VM에 맞는 설치법 대로 Ubunut 이미지를 마운트하여 설치하면 됩니다.<br> 
 데스크탑 같은 하드웨어에 설치하기 위해서 부팅을 설치 USB가 실행되게 만들어서 설치해주면 됩니다.<br>
+
+"/casper/vmlinuz.efi : file not found" 오류가 발생하면 다음 방법을 따라해보세요
+
+### Universal USB Installer를 이용한 설치
+
+Rufus로 설치 시 가끔 아래와 같은 오류가 발생하여 설치가 안될 때가 있습니다.
+ "/casper/vmlinuz.efi : file not found"
+
+해당 문제 발생 시 다른 부팅 USB 프로그램인 Universal USB Installer를 이용하시면 됩니다.
+
+아래는 공식 사이트로<br>
+https://pendrivelinux.com/universal-usb-installer-easy-as-1-2-3/#UUI-Download<br>
+
+여기서 스크롤을 내리면 UUI 다운로드 버튼이 있습니다.
+
+<img src="./image/uui1.png">
+
+해당 버튼을 눌러서 다운받은 후 설치한 exe 파일을 실행하면
+
+<img src="./image/uui2.png">
+
+동의 버튼을 누르고
+
+<img src="./image/uui3.png">
+
+1. 빨간색 버튼으로 부팅 USB로 만들 USB를 선택해주시고
+2. 파란색에서 설치할 OS를 선택해주시고
+3. 보라색으로 OS의 이미지 파일을 선택해주시면 됩니다.
+4. 그리고 create 버튼을 누르면 완료입니다.
+
 
 ### SSH 연결
 
