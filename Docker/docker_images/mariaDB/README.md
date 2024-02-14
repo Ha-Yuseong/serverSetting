@@ -37,7 +37,7 @@ docker pull mariadb
 
 이제 MariaDB 컨테이너를 실행시켜줍니다.
 ```
-docker run -d --name "컨테이너 이름" --env MARIADB_ROOT_PASSWORD="root 비밀번호 입력"  mariadb
+docker run -d --name "컨테이너 이름" -p "외부포트:내부포트" --env MARIADB_ROOT_PASSWORD="root 비밀번호 입력"  mariadb
 ```
 
 <img src="./result_image/mariaDB_run.png"><br>
