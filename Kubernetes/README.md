@@ -80,6 +80,42 @@ Node(워커 노드) 의 구성요소는 다음과 같습니다.
 ---
 ### Kubernetes 설치 방법
 
+#### !!!! k8s 설치 전 Docker를 먼저 설치해주세요 !!!!
+
+설치에 앞서 기본 세팅을 해야합니다.
+
+아래 명령어로 노드들이 swapoff가 되도록 만들어줘야 쿠버네티스에서 오류가 발생하지 않습니다.
+
+```
+swapoff -a && sed -i '/swap/s/^/#/' /etc/fstab
+ 
+혹은
+ 
+sudo swapoff -a && sudo sed -i '/swap/s/^/#/' /etc/fstab
+```
+
+그리고 iptable 설정을 위한 명령어 수행
+
+```
+cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+br_netfilter
+EOF
+ 
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+sudo sysctl --system
+```
+
+방화벽이 설정되어있다면 방화벽 예외 설정
+```
+sudo systemctl stop firewalld
+sudo systemctl disable firewalld
+```
+
+6443 포트가 사용가능한 상태인지 확인해주시면 됩니다.
+
 공식 사이트를 기준으로 설치방법을 배워보겠습니다.<br>
 https://kubernetes.io/ko/docs/tasks/tools/<br>
 
@@ -88,7 +124,7 @@ https://kubernetes.io/ko/docs/tasks/tools/<br>
 2. 기본 패키지 관리 도구를 사용하여 설치
 3. 다른 패키지 관리 도구를 사용하여 설치
 
-저의 경우 2번을 기준으로 Debian 계열의 기본 패키지인 apt를 이용한 kuberctl 설치를 진행하겠습니다.
+저의 경우 1번과 2번으로 각각 설치헤본 경험이 있는데 2번 방법을 기준으로 Debian 계열의 기본 패키지인 apt를 이용한 kuberctl 설치를 설명하겠습니다.
 
 apt 패키지 인덱스를 업데이트하고 쿠버네티스 apt 리포지터리를 사용하는 데 필요한 패키지들을 설치.
 ```
@@ -150,3 +186,92 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/kuber
 
 ----
 ----
+
+
+### 클러스터 생성하기
+
+kubectl을 설치하였다면 이제 클러스터를 생성하고 실행해야 합니다.<br>
+클러스터 실행을 위해선 도구가 필요합니다. 도구의 종류는 많지만 공식사이트에서 소개하는 3가지 도구는 다음과 같습니다.
+
+1. kind
+2. minikube
+3. kubeadm
+
+1번 kind와 2번 minikube는 각각 로컬에서 쿠버네티스 실행에 사용되는 도구입니다.<br>
+특히 minikube는 단일 머신에서 쿠버네티스를 실행하여 개발 및 테스트를 하기 위한 작은 규모의 클러스터를 생성할 수 있어서 쿠버네티스 학습 시 매우 유용합니다.
+
+kubeadm의 경우 개발 테스트 정도가 아닌 실제 서비스 운영에 사용하는 도구입니다.<br>
+여러 대의 머신에서 쿠버네티스 클러스터를 구성하고 운영는 도구이며 커뮤니티에서도 가장 권장하는 도구입니다.
+
+저희는 kubeadm을 통해서 설치를 진행해보겠습니다.
+
+앞에서 이미 레포지토리 설정을 다했다면 설치는 다음 명령어를 입력하시면 됩니다.
+
+```
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+```
+
+그리고 kubeadm 을 실행하려면 다음 명령어를 입력하면 됩니다.
+
+```
+sudo kubeadm init
+```
+
+만약 다음과 같은 에러가 발생한다면?
+
+<img src="./images/CRI_error.png">
+
+```
+error execution phase preflight: [preflight] Some fatal errors occurred:
+        [ERROR CRI]: container runtime is not running: output: time="2024-02-15T14:28:58+09:00" level=fatal msg="validate service connection: CRI v1 runtime API is not implemented for endpoint \"unix:///var/run/containerd/containerd.sock\": rpc error: code = Unimplemented desc = unknown service runtime.v1.RuntimeService"
+, error: exit status 1
+```
+
+해당 에러는 CRI가 없기 때문에 발생하는 문제입니다.
+
+해결방법은 CRI-O를 따로 설치하거나, Docker를 설치하면 CRI로 containerd가 설치될 것입니다.
+
+하지만 Docker를 이미 설치했는데 이런 문제가 발생한다면 다음 명령어로 해결이 가능합니다.
+
+```
+sudo rm /etc/containerd/config.toml
+sudo systemctl restart containerd
+sudo kubeadm init
+```
+
+이후 다시 init를 하면 제대로 수행이 될 것입니다.
+
+init가 수행되면 다음과 같이 결과가 나올겁니다.
+
+<img src="./images/kubeadm_init.png">
+
+그러면 다음 명령어들을 실행시켜야합니다.
+
+```
+# kubeadm init를 수행한 현재 계정이 일반 유저라면 다음 명령어를 수행해주면 됩니다.
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+# root 유저라면 다음 명령어로 수행하면 됩니다.
+export KUBECONFIG=/etc/kubernetes/admin.conf
+```
+
+그리고 Pod network add-on을 설치해줍시다.
+add-on도 여러개가 많은데 대표적으로는 flannel이 있습니다.
+
+```
+# 아래 명령어는 수행이 안되던데 weave가 없어진 것 같습니다.
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+
+# 아래는 fiannel 설치로 weave가 안되길레 저는 이걸 설치하였습니다.
+kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+```
+
+@@ 만약 kubeadm init로 나왔던 토큰 값을 잊었다면
+
+```
+
+```
