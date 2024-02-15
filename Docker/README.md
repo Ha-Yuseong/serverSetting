@@ -40,33 +40,39 @@ https://aws.amazon.com/ko/docker/<br>
     ubuntu 기준으로는 아래에 공식사이트에서 실행시켜야할 명령들을 제공합니다.
     https://docs.docker.com/engine/install/ubuntu/
 
-    1. 먼저 도커 레포지터리를 세팅해야합니다. 이유는 추후 docker install, update를 레포지터리에서 수행 가능하게 되기 때문이라고 합니다.
+    1. 우선 아래의 충돌을 야기시킬 수 있는 도커 관련된 모든 파일들을 삭제하는 명령어를 입력해주세요.
+    ```
+    for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+    ```
+
+    2. apt에 도커 레포지토리를 세팅합니다.
 
     아래의 명령들을 위에서부터 차례대로 수행해줍니다.
 
     # Add Docker's official GPG key (아래는 도커 공식 GPG key 추가하는 코드들):
     sudo apt-get update
-    sudo apt-get install ca-certificates curl gnupg
+    sudo apt-get install ca-certificates curl
     sudo install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    sudo chmod a+r /etc/apt/keyrings/docker.gpg
+    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    sudo chmod a+r /etc/apt/keyrings/docker.asc
 
     # Add the repository to Apt sources (레포지터리를 apt 소스에 추가하는 코드들):
     echo \
-    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
     $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
     sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    
     sudo apt-get update
 
-    2. docker pakage를 install합니다.
+    3. docker pakage를 install합니다.
     
     sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-    3. docker engine이 제대로 설치되었는지 hello-world 이미지를 실행하여 확인해봅니다.
+    4. docker engine이 제대로 설치되었는지 hello-world 이미지를 실행하여 확인해봅니다.
 
     sudo docker run hello-world
 
-정상적으로 설치하고 3번을 수행하면 결과는 다음과 같습니다.<br><br>
+정상적으로 설치했다면 결과는 다음과 같습니다.<br><br>
 <img src="./result_image/docekr_result.png"><br>
 
 ### Docker Image 검색
