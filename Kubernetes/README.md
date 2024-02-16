@@ -87,10 +87,6 @@ Node(워커 노드) 의 구성요소는 다음과 같습니다.
 아래 명령어로 노드들이 swapoff가 되도록 만들어줘야 쿠버네티스에서 오류가 발생하지 않습니다.
 
 ```
-swapoff -a && sed -i '/swap/s/^/#/' /etc/fstab
- 
-혹은
- 
 sudo swapoff -a && sudo sed -i '/swap/s/^/#/' /etc/fstab
 ```
 
@@ -132,20 +128,15 @@ sudo apt-get update
 sudo apt-get install -y apt-transport-https ca-certificates curl
 ```
 
-@@@@ <b>Debian 9(stretch) 또는 그 이전 버전을 사용하는 경우 apt-transport-https도 설치.</b> @@@@
-```
-sudo apt-get install -y apt-transport-https
-```
-
 구글 클라우드 공개 서명 키를 다운로드
 
 ```
-sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 ```
 
 쿠버네티스 apt 리포지터리를 추가한다.
 ```
-echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
 ```
 
 새 리포지터리의 apt 패키지 인덱스를 업데이트하고 kubectl을 설치.
@@ -153,36 +144,6 @@ echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://a
 sudo apt-get update
 sudo apt-get install -y kubectl
 ```
-
-### 문제가 발생하는 경우
-
-저의 경우 Ubunut 22.04.3 LTS에서 다음과 같은 문제가 발생했습니다.
-
-```
-...(위의 내용 생략)
-W: GPG 오류: https://packages.cloud.google.com/apt kubernetes-xenial InRelease: 다음 서명들은 공개키가 없기 때문에 인증할 수 없습니다: NO_PUBKEY B53DC80D13EDEF05
-E: The repository 'https://apt.kubernetes.io kubernetes-xenial InRelease' is not signed.
-N: Updating from such a repository can't be done securely, and is therefore disabled by default.
-N: See apt-secure(8) manpage for repository creation and user configuration details.
-```
-
-이 문제를 해결하는 방법을 github issue에서 찾았는데 다음과 같았습니다.
-
-<img src="./images/install_issue.png"><br>
-
-
-위의 설치 과정에서 
-"구글 클라우드 공개 서명 키를 다운로드"의 경우 아래 명령어를 실행시키고
-```
-curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --yes --dearmor -o /usr/share/keyrings/kubernetes-archive-keyring.gpg
-```
-
-"쿠버네티스 apt 리포지터리를 추가 " 부분에서는 아래 명령어를 수행시켜주시면 됩니다.
-```
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list > /dev/null
-```
-
-위 두개의 명령을 수행하고 apt update 및 설치를 진행하자 설치가 정상적으로 수행되었습니다.
 
 ----
 ----
@@ -260,18 +221,14 @@ export KUBECONFIG=/etc/kubernetes/admin.conf
 ```
 
 그리고 Pod network add-on을 설치해줍시다.
-add-on도 여러개가 많은데 대표적으로는 flannel이 있습니다.
+add-on도 여러개가 많은데 대표적으로는 flannel이 있어서 이것을 설치하겠습니다.
 
 ```
-# 아래 명령어는 수행이 안되던데 weave가 없어진 것 같습니다.
-kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
-
-# 아래는 fiannel 설치로 weave가 안되길레 저는 이걸 설치하였습니다.
 kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
 ```
 
-@@ 만약 kubeadm init로 나왔던 토큰 값을 잊었다면
+kubeadm init로 나왔던 토큰 값을 잊었다면 아래 명령어 수행시 확인가능합니다.
 
 ```
-
+sudo kubeadm token list
 ```
