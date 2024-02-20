@@ -189,14 +189,29 @@ error execution phase preflight: [preflight] Some fatal errors occurred:
 , error: exit status 1
 ```
 
-해당 에러는 CRI가 없기 때문에 발생하는 문제입니다.
+해당 에러를 해결하기 위해서는 2가지 방법이 있습니다.
 
-해결방법은 CRI-O를 따로 설치하거나, Docker를 설치하면 CRI로 containerd가 설치될 것입니다.
+1. config.toml을 삭제하기
+```
+# 해당 명령어는 kubectl 명령이 수행되지 않는 문제가 발생할 수도 있다고 합니다.
+sudo rm /etc/containerd/config.toml
+```
 
-하지만 Docker를 이미 설치했는데 이런 문제가 발생한다면 다음 명령어로 해결이 가능합니다.
+2. config.toml 파일 수정하기
+
+<img src="./images/containerd.png"><br>
+
+위의 이미지와 같이 파일을 열어서 해당 부분을 주석으로 처리하면 됩니다.
 
 ```
-sudo rm /etc/containerd/config.toml
+sudo vi /etc/containerd/config.toml
+
+# disabled_plugins = ["cri"] 부분을 주석처리.
+```
+
+위 두 방법 중 하나를 수행하시고
+
+```
 sudo systemctl restart containerd
 sudo kubeadm init
 ```
@@ -230,6 +245,33 @@ kubeadm init로 나왔던 토큰 값을 잊었다면 아래 명령어 수행시 
 sudo kubeadm token list
 ```
 
+클러스터의 노드들 확인하기
+```
+# 일반 유저의 경우
+kubectl get nodes
+
+# root 유저의 경우 root계정으로 입력하거나 sudo를 붙여서
+sudo kubectl get nodes
+```
+
+@@@ The connection to the server [호스트 IP 주소 부분]:6443 was refused - did you specify the right host or port? 오류 발생 시
+
+1. Swapoff가 적용되지 않았을 수 있습니다. 맨 처음에 적어놓았던 Swap off를 다시 입력해주시면 됩니다.
+
+2. Docker.engine의 자원을 할당 받는 cgroupdriver가 k8s의 드라이버와 맞지 않기 때문에 다음과 같이 파일을 생성하여 docker와 k8s가 사용할 수 있도록 설정해야합니다.
+```
+vi /etc/docker/daemon.json
+
+{
+        "exec-opts": ["native.cgroupdriver=systemd"]
+}
+```
+<img src="./images/daemonSetting.png">
+
+
+
+@@@ 해당 명령을 실행했을 때 8080 refused라는 에러가 나오면 kubectl을 restart하거나 시스템을 reboot해보면 해결되는 것을 확인했습니다. @@@
+
 ----
 ----
 
@@ -244,6 +286,9 @@ sudo kubeadm token list
 ```
 sudo kubeadm join 10.0.100.40:6443 --token zbgv72.v9ac8xhex128xjwp --discovery-token-ca-cert-hash sha256:2193f25bad65918197d7b543e282327741bdd99748b1a6d879e1b4dc
 ```
+
+@@ 워커 노드에서 kubectl get nodes 시 에러가 발생하면 마스터 노드의 ~/.kube 디렉토리를 워커노드의 ~/ 에 붙여넣으시면 됩니다.
+
 
 ### 쿠버네티스 완전 삭제
 
