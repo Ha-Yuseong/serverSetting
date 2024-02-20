@@ -37,10 +37,10 @@
 더욱 자세한 설명은 쿠버네티스 공식 문서인 다음 사이트를 참고하시면 되겠습니다.<br>
 https://kubernetes.io/ko/docs/concepts/overview/
 
-</details>
+-----
+----
 
-----
-----
+</details>
 
 ### Kubernetes 컴포넌트 ( 쿠버네티스의 구성 요소와 아키텍쳐 )
 
@@ -149,7 +149,6 @@ sudo apt-get install -y kubectl
 ----
 ----
 
-
 ### 컨트롤 플레인(마스터 노드)에서 클러스터 생성하기
 
 쿠버네티스를 시작하려면 컨트롤 플레인에서 클러스터를 생성하고 실행해야 합니다.<br>
@@ -229,4 +228,28 @@ kubeadm init로 나왔던 토큰 값을 잊었다면 아래 명령어 수행시 
 
 ```
 sudo kubeadm token list
+```
+
+----
+----
+
+### 노드(워커 노드)에서 클러스터에 참여하기
+
+워커 노드에서 참여하는 방법은 간단합니다.
+
+위의 클러스터 생성 시 맨 밑에 생성된 sudo kubeadm join 부분을 그대로 복사해서 붙여넣기하면 됩니다.
+
+@@ 아래는 인터넷에 나와있던 예시입니다. 그대로 복사하시면 안됩니다. @@
+
+```
+sudo kubeadm join 10.0.100.40:6443 --token zbgv72.v9ac8xhex128xjwp --discovery-token-ca-cert-hash sha256:2193f25bad65918197d7b543e282327741bdd99748b1a6d879e1b4dc
+```
+
+### 쿠버네티스 완전 삭제
+
+```
+sudokubeadm reset
+sudo apt-get purge kubeadm kubectl kubelet kubernetes-cni kube*   
+sudo apt-get autoremove  
+sudo rm -rf ~/.kube
 ```
