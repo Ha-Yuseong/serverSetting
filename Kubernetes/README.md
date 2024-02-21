@@ -83,37 +83,39 @@ Node(워커 노드) 의 구성요소는 다음과 같습니다.
 ### !!!! k8s 설치 전 Docker를 먼저 설치해주세요 !!!!
 [Docker 설치는 여기를 클릭하여 Docker 설치 방법 확인](../Docker/README.md)
 
+아래의 내용들은 모두 워커 노드, 마스터 노드 동일하게 설치해주셔야합니다.<br>
 설치에 앞서 기본 세팅을 해야합니다.
 
 아래 명령어로 노드들이 swapoff가 되도록 만들어줘야 쿠버네티스에서 오류가 발생하지 않습니다.
 
 ```
-sudo swapoff -a && sudo sed -i '/swap/s/^/#/' /etc/fstab
+sudo swapoff -a
+sudo sed -i '/swap/s/^/#/' /etc/fstab
 ```
 
 그리고 iptable 설정을 위한 명령어 수행
 
 ```
 cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+overlay
 br_netfilter
 EOF
- 
+
+sudo modprobe overlay
+sudo modprobe br_netfilter
+
+# sysctl params required by setup, params persist across reboots
 cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-iptables  = 1
 net.bridge.bridge-nf-call-ip6tables = 1
-net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward                 = 1
 EOF
+
+# Apply sysctl params without reboot
 sudo sysctl --system
 ```
 
-방화벽이 설정되어있다면 방화벽 예외 설정
-```
-sudo systemctl stop firewalld
-sudo systemctl disable firewalld
-```
-
-6443 포트가 사용가능한 상태인지 확인해주시면 됩니다.
-
-공식 사이트를 기준으로 설치방법을 배워보겠습니다.<br>
+공식 사이트를 기준으로 설치방법을 배워보겠습니다. ( 공식 사이트에서 한글을 지원하지만 언어를 영어로 선택해야 최신버전의 글을 읽을 수 있습니다!! )<br>
 https://kubernetes.io/ko/docs/tasks/tools/<br>
 
 먼저 kubectl을 설치해야합니다. 크게 아래와 같이 3가지 방법이 있는데
@@ -143,7 +145,23 @@ echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.
 새 리포지터리의 apt 패키지 인덱스를 업데이트하고 kubectl을 설치.
 ```
 sudo apt-get update
-sudo apt-get install -y kubectl
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+```
+
+이후 아래의 명령어를 수행시켜주어 etc/containerd/config.toml 의 내용을 수정해줍니다.
+```
+# continaerd 디렉터리가 없다면
+sudo mkdir /etc/containerd
+
+sudo sh -c "containerd config default > /etc/containerd/config.toml"
+sudo sed -i 's/ SystemCgroup = false/ SystemCgroup = true/' /etc/containerd/config.toml
+
+
+sudo systemctl restart containerd.service
+sudo systemctl restart kubelet.service
+sudo systemctl enable kubelet.service
+
 ```
 
 ----
@@ -163,56 +181,13 @@ sudo apt-get install -y kubectl
 
 kubeadm의 경우 여러 대의 머신에서 쿠버네티스 클러스터를 구성하고 운영할 수 있는 도구이며 커뮤니티에서도 가장 권장하는 도구입니다.
 
-저희는 kubeadm을 설치하여 클러스터 생성을 진행해보겠습니다.
+저희는 kubeadm을 설치하였으므로 kubeadm 기준으로 클러스터 생성을 진행해보겠습니다.
 
-앞에서 이미 레포지토리 설정을 다했다면 설치는 다음 명령어를 입력하시면 됩니다.
-
-```
-sudo apt-get update
-sudo apt-get install -y kubelet kubeadm kubectl
-sudo apt-mark hold kubelet kubeadm kubectl
-```
-
-그리고 kubeadm 을 실행하려면 다음 명령어를 입력하면 됩니다.
+<b>마스터 노드</b>에서 kubeadm 을 실행하려면 다음 명령어를 입력하면 됩니다.
 
 ```
-sudo kubeadm init
-```
+sudo kubeadm config images pull
 
-만약 다음과 같은 에러가 발생한다면?
-
-<img src="./images/CRI_error.png">
-
-```
-error execution phase preflight: [preflight] Some fatal errors occurred:
-        [ERROR CRI]: container runtime is not running: output: time="2024-02-15T14:28:58+09:00" level=fatal msg="validate service connection: CRI v1 runtime API is not implemented for endpoint \"unix:///var/run/containerd/containerd.sock\": rpc error: code = Unimplemented desc = unknown service runtime.v1.RuntimeService"
-, error: exit status 1
-```
-
-해당 에러를 해결하기 위해서는 2가지 방법이 있습니다.
-
-1. config.toml을 삭제하기
-```
-# 해당 명령어는 kubectl 명령이 수행되지 않는 문제가 발생할 수도 있다고 합니다.
-sudo rm /etc/containerd/config.toml
-```
-
-2. config.toml 파일 수정하기
-
-<img src="./images/containerd.png"><br>
-
-위의 이미지와 같이 파일을 열어서 해당 부분을 주석으로 처리하면 됩니다.
-
-```
-sudo vi /etc/containerd/config.toml
-
-# disabled_plugins = ["cri"] 부분을 주석처리.
-```
-
-위 두 방법 중 하나를 수행하시고
-
-```
-sudo systemctl restart containerd
 sudo kubeadm init
 ```
 
@@ -232,11 +207,22 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 export KUBECONFIG=/etc/kubernetes/admin.conf
 ```
 
-그리고 Pod network add-on을 설치해줍시다.
-add-on도 여러개가 많은데 대표적으로는 flannel이 있어서 이것을 설치하겠습니다.
+그리고 Pod network add-on을 설치해줍시다.<br>
+add-on도 여러개가 많은데 저는 calico를 기준으로 설치해보겠습니다. 공식 사이트는 아래와 같으므로 최신 버전을 설치하시면 될 것 같습니다.<br>
+https://docs.tigera.io/calico/latest/getting-started/kubernetes/quickstart<br>
 
 ```
-kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.2/manifests/tigera-operator.yaml
+
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.2/manifests/custom-resources.yaml
+
+watch kubectl get pods -n calico-system
+
+kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+kubectl taint nodes --all node-role.kubernetes.io/master-
+# 결과 : node/<your-hostname> untainted
+
+kubectl get nodes -o wide
 ```
 
 kubeadm init로 나왔던 토큰 값을 잊었다면 아래 명령어 수행시 확인가능합니다.
@@ -256,7 +242,7 @@ sudo kubectl get nodes
 
 @@@ The connection to the server [호스트 IP 주소 부분]:6443 was refused - did you specify the right host or port? 오류 발생 시
 
-1. Swapoff가 적용되지 않았을 수 있습니다. 맨 처음에 적어놓았던 Swap off를 다시 입력해주시면 됩니다.
+1. Swapoff가 적용되지 않았을 수 있습니다. 알아본 결과 서버가 재부팅되거나 시간이 지나면 swapoff가 풀릴 수 있다고 하므로 swapoff를 다시 꺼야할 것입니다.
 
 2. Docker.engine의 자원을 할당 받는 cgroupdriver가 k8s의 드라이버와 맞지 않기 때문에 다음과 같이 파일을 생성하여 docker와 k8s가 사용할 수 있도록 설정해야합니다.
 ```
@@ -268,7 +254,11 @@ vi /etc/docker/daemon.json
 ```
 <img src="./images/daemonSetting.png">
 
+이후 변경사항이 적용되도록 Docker를 재시작 해주시면 됩니다.
 
+```
+sudo systemctl restart docker
+```
 
 @@@ 해당 명령을 실행했을 때 8080 refused라는 에러가 나오면 kubectl을 restart하거나 시스템을 reboot해보면 해결되는 것을 확인했습니다. @@@
 
@@ -293,7 +283,7 @@ sudo kubeadm join 10.0.100.40:6443 --token zbgv72.v9ac8xhex128xjwp --discovery-t
 ### 쿠버네티스 완전 삭제
 
 ```
-sudokubeadm reset
+sudo kubeadm reset
 sudo apt-get purge kubeadm kubectl kubelet kubernetes-cni kube*   
 sudo apt-get autoremove  
 sudo rm -rf ~/.kube
