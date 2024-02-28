@@ -11,9 +11,11 @@ Ubunt, Docker, Nginx, Kubernetes, Jenkins를 이용한 서버 세팅, CI/CD 방�
 ### [Docker 설치 방법](./Docker/README.md)
 1. [Docker에 MariaDB(RDBMS) 설치](./Docker/docker_images/mariaDB/README.md)
 2. [Docker에 Redis 설치](./Docker/docker_images/Redis/README.md)
+3. [Docker에 Jenkins 설치](./Docker/docker_images/jenkins/README.md)
+4. Docker에 Kafka 설치 (제작 중)
 
 ### [Nginx 설치 방법](./Nginx/README.md)
 
 ### [Kubernetes 설치 방법](./Kubernetes/README.md)
 
-(Jenkins 예정)
+### [Jenkins 설치 방법](./Jenkins/README.md)
